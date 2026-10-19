@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inter.co/piggies/events/payment-confirmed.schema.json",
+  "title": "PaymentConfirmed",
+  "description": "Topico piggies.payment.confirmed (key = paymentId). Publicado pelo Coordinator quando intencao, reserva e merchant concluem com sucesso. ReserveService debita o cliente, MerchantService credita o merchant; aberto a outros sistemas.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "occurredAt", "paymentId", "customerId", "merchantId", "amount"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "paymentId": { "type": "string", "format": "uuid" },
+    "customerId": { "type": "string", "minLength": 1 },
+    "merchantId": { "type": "string", "minLength": 1 },
+    "amount": { "type": "integer", "minimum": 1 }
+  }
+}

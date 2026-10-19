@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inter.co/piggies/events/payment-rejected.schema.json",
+  "title": "PaymentRejected",
+  "description": "Topico piggies.payment.rejected (key = paymentId). Publicado pelo Coordinator quando a reserva ou a validacao do merchant falham. ReserveService libera a reserva, se existir.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "occurredAt", "paymentId", "customerId", "merchantId", "amount", "reason"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "paymentId": { "type": "string", "format": "uuid" },
+    "customerId": { "type": "string", "minLength": 1 },
+    "merchantId": { "type": "string", "minLength": 1 },
+    "amount": { "type": "integer", "minimum": 1 },
+    "reason": { "type": "string" }
+  }
+}

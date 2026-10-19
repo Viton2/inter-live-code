@@ -1,0 +1,63 @@
+openapi: 3.0.3
+info:
+  title: PiggiesReserveService
+  version: 1.0.0
+  description: |
+    Reserva e confirma o debito do cliente. Estado persistido em PostgreSQL.
+    O fluxo de pagamento e 100% via Kafka; a API HTTP abaixo e de suporte (carga de saldo e consulta).
+
+    Eventos consumidos: piggies.payment.initiated (reserva), piggies.payment.confirmed (debito),
+                        piggies.payment.rejected (libera reserva)
+    Eventos publicados: piggies.reserve.result
+paths:
+  /accounts/{customerId}/deposits:
+    post:
+      operationId: deposit
+      summary: Credita Piggies na conta do cliente (cria a conta se nao existir)
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [amount]
+              properties:
+                amount: { type: integer, format: int64, minimum: 1 }
+      responses:
+        '200':
+          description: Saldo atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+  /accounts/{customerId}:
+    get:
+      operationId: getAccount
+      summary: Consulta saldo total, reservado e disponivel
+      parameters:
+        - $ref: '#/components/parameters/CustomerId'
+      responses:
+        '200':
+          description: Conta
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Account' }
+        '404':
+          description: Conta nao encontrada
+components:
+  parameters:
+    CustomerId:
+      name: customerId
+      in: path
+      required: true
+      schema: { type: string }
+  schemas:
+    Account:
+      type: object
+      required: [customerId, balance, reserved, available]
+      properties:
+        customerId: { type: string }
+        balance: { type: integer, format: int64 }
+        reserved: { type: integer, format: int64 }
+        available: { type: integer, format: int64 }

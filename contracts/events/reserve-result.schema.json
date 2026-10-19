@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inter.co/piggies/events/reserve-result.schema.json",
+  "title": "ReserveResult",
+  "description": "Topico piggies.reserve.result (key = paymentId). Publicado pelo ReserveService; consumido pelo Coordinator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "occurredAt", "paymentId", "status"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "paymentId": { "type": "string", "format": "uuid" },
+    "status": { "type": "string", "enum": ["RESERVED", "REJECTED"] },
+    "reason": { "type": ["string", "null"] }
+  }
+}

@@ -5,14 +5,18 @@ datasources:
   default:
     url: jdbc:postgresql://localhost:5432/postgres
     username: postgres
-    password: ''
+    password: postgres
     driver-class-name: org.postgresql.Driver
     db-type: postgres
     dialect: POSTGRES
 jpa:
   default:
+    entity-scan:
+      packages: co.inter.piggies
     properties:
       hibernate:
         hbm2ddl:
           auto: update
-jpa.default.properties.hibernate.hbm2ddl.auto: update
+kafka:
+  bootstrap:
+    servers: localhost:9092

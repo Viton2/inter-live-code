@@ -1,0 +1,60 @@
+openapi: 3.0.3
+info:
+  title: PiggiesMerchantService
+  version: 1.0.0
+  description: |
+    Valida o merchant e registra o credito (recebivel). Estado persistido em PostgreSQL.
+    O fluxo de pagamento e 100% via Kafka; a API HTTP abaixo e de suporte (cadastro e consulta).
+
+    Eventos consumidos: piggies.payment.initiated (validacao), piggies.payment.confirmed (credito)
+    Eventos publicados: piggies.merchant.validation.result
+paths:
+  /merchants:
+    post:
+      operationId: upsertMerchant
+      summary: Cadastra ou atualiza um merchant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Merchant' }
+      responses:
+        '200':
+          description: Merchant salvo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Merchant' }
+  /merchants/{merchantId}/receivables:
+    get:
+      operationId: listReceivables
+      summary: Lista os recebiveis (creditos) do merchant
+      parameters:
+        - name: merchantId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Recebiveis
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Receivable' }
+components:
+  schemas:
+    Merchant:
+      type: object
+      required: [merchantId, name, active]
+      properties:
+        merchantId: { type: string, minLength: 1 }
+        name: { type: string, minLength: 1 }
+        active: { type: boolean }
+    Receivable:
+      type: object
+      required: [paymentId, merchantId, amount, createdAt]
+      properties:
+        paymentId: { type: string, format: uuid }
+        merchantId: { type: string }
+        amount: { type: integer, format: int64 }
+        createdAt: { type: string, format: date-time }

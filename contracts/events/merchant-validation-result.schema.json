@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inter.co/piggies/events/merchant-validation-result.schema.json",
+  "title": "MerchantValidationResult",
+  "description": "Topico piggies.merchant.validation.result (key = paymentId). Publicado pelo MerchantService; consumido pelo Coordinator.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "occurredAt", "paymentId", "status"],
+  "properties": {
+    "eventId": { "type": "string", "format": "uuid" },
+    "occurredAt": { "type": "string", "format": "date-time" },
+    "paymentId": { "type": "string", "format": "uuid" },
+    "status": { "type": "string", "enum": ["VALID", "INVALID"] },
+    "reason": { "type": ["string", "null"] }
+  }
+}

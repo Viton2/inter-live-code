@@ -1,0 +1,106 @@
+openapi: 3.0.3
+info:
+  title: PiggiesPaymentCoordinator
+  version: 1.0.0
+  description: |
+    Ponto de entrada do App. Registra a intencao de pagamento e orquestra a confirmacao.
+    A API e assincrona: POST /payments responde 202 imediatamente e o cliente acompanha
+    o status via GET /payments/{paymentId} (link no header Location).
+
+    Eventos publicados: piggies.payment.initiated, piggies.payment.confirmed, piggies.payment.rejected
+    Eventos consumidos: piggies.reserve.result, piggies.merchant.validation.result
+paths:
+  /payments:
+    post:
+      operationId: initiatePayment
+      summary: Inicia um pagamento a partir de um QR Code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitiatePaymentRequest'
+      responses:
+        '202':
+          description: Intencao registrada; processamento segue de forma assincrona
+          headers:
+            Location:
+              schema: { type: string, example: /payments/3f1c5e2a-0d4b-4c8e-9a51-2b7d6f0e9c11 }
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '400':
+          description: Requisicao invalida (ex. QR Code mal formado, valor <= 0)
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /payments/{paymentId}:
+    get:
+      operationId: getPayment
+      summary: Consulta o status de um pagamento
+      parameters:
+        - name: paymentId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Pagamento encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Payment'
+        '404':
+          description: Pagamento nao encontrado
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+components:
+  schemas:
+    InitiatePaymentRequest:
+      type: object
+      required: [customerId, qrCode]
+      properties:
+        customerId:
+          type: string
+          minLength: 1
+          example: cliente-a
+        qrCode:
+          type: string
+          description: "Conteudo do QR Code no formato piggies://pay?merchant={merchantId}&amount={piggies}"
+          example: piggies://pay?merchant=merchant-x&amount=100
+    Payment:
+      type: object
+      required: [paymentId, customerId, merchantId, amount, status, reserveStatus, merchantStatus]
+      properties:
+        paymentId: { type: string, format: uuid }
+        customerId: { type: string }
+        merchantId: { type: string }
+        amount:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Quantidade inteira de Piggies
+        status:
+          type: string
+          enum: [PENDING, CONFIRMED, REJECTED]
+        reserveStatus:
+          type: string
+          enum: [PENDING, RESERVED, REJECTED]
+        merchantStatus:
+          type: string
+          enum: [PENDING, VALID, INVALID]
+        reason:
+          type: string
+          nullable: true
+          description: Motivo da rejeicao, quando status = REJECTED
+    Problem:
+      type: object
+      properties:
+        type: { type: string }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
